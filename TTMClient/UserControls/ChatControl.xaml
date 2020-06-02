@@ -45,6 +45,28 @@
                             </ListBoxItem>
                         </ListBox>
                     </materialDesign:PopupBox>
+                    <materialDesign:PopupBox  DockPanel.Dock="Right" PlacementMode="BottomAndAlignRightEdges" Margin=" 0 15 7 0">
+                        <ListBox>
+                            <ListBoxItem>
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="UserAdd" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    <TextBlock Margin="15 0 0 0" Text="Добавить пользователя" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </ListBoxItem>
+                            <ListBoxItem>
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Users" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    <TextBlock Margin="15 0 0 0" Text="Пользователи" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </ListBoxItem>
+                            <ListBoxItem>
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="LocationExit" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    <TextBlock Margin="15 0 0 0" Text="Покинуть" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </ListBoxItem>
+                        </ListBox>
+                    </materialDesign:PopupBox>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center" Foreground="{StaticResource TextBrush2}" Margin="16 15 0 0" Text="{Binding Group.Name}" FontSize="30"/>
                     </StackPanel>

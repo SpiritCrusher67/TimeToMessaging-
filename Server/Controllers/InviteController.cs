@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using Server.Models;
 using TTMLibrary.Models;
@@ -22,29 +23,31 @@ namespace Server.Controllers
 
         //создание инвайта
         [HttpPost]
-        public async Task<ActionResult<Invite>> Post([FromBody]JObject data)
+        public async Task<ActionResult<Invite>> Post(Invite invite)
         {
-            var groupId = data["groupId"].ToObject<Guid>();
-            var userLogin = data["userLogin"].ToString();
-
-            var invite = new Invite(userLogin,groupId);
-
             db.Invites.Add(invite);
             await db.SaveChangesAsync();
-
+            return Ok();
+        }
+        [HttpPut]
+        public async Task<ActionResult<Invite>> Put(Invite invite)
+        {
+            db.Update(invite);
+            await db.SaveChangesAsync();
             return Ok();
         }
 
-        //обновление
-        [HttpPut]
-        public async Task<ActionResult<Invite>> Put([FromBody]JObject data)
+        [HttpGet("{login}")]
+        public async Task<ActionResult<IEnumerable<Guid>>> Get(string login)
         {
-            var invite = data["invite"].ToObject<Invite>();
-
-            db.Update(invite);
-            await db.SaveChangesAsync();
-
-            return Ok();
+            var user = await db.Users.Include("Invites").Where(u => u.Login == login).FirstOrDefaultAsync();
+            return user.Invites.Select(g => g.Id).ToList();
+        }
+        [HttpGet("{login}/{id}")]
+        public async Task<ActionResult<Invite>> Get(string login, Guid id)
+        {
+            var invite = await db.Invites.Include("Group").Where(g => g.Id == id).FirstOrDefaultAsync();
+            return invite;
         }
     }
 }

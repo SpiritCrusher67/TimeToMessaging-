@@ -8,6 +8,9 @@ namespace TTMLibrary.Models
 
         public IviteStatus Status { get; set; }
 
+        public string SenderLogin { get; set; }
+        public User Sender { get; set; }
+
         public string UserLogin { get; set; }
         public User User { get; set; }
 

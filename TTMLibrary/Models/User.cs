@@ -12,6 +12,7 @@ namespace TTMLibrary.Models
         public ICollection<Invite> Invites { get; set; }
         public ICollection<UserUser> Friends { get; set; }
         public ICollection<UserUser> Users { get; set; }
+        public ICollection<Invite> SendedInvites { get; set; }
 
         public User()
         {

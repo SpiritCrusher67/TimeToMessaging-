@@ -62,6 +62,11 @@ namespace Server.Models
                 .WithMany(u => u.Invites)
                 .HasForeignKey(i => i.UserLogin);
 
+            modelBuilder.Entity<Invite>()
+                .HasOne(i => i.Sender)
+                .WithMany(u => u.SendedInvites)
+                .HasForeignKey(i => i.SenderLogin);
+
             User User1 = new User { Login = "1", Password = "1" };
             User User2 = new User { Login = "2", Password = "2" };
             modelBuilder.Entity<User>()

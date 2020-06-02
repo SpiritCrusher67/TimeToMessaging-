@@ -35,6 +35,7 @@ namespace TTMClient.ModelViews
         string token;
         private bool chatsIsSelected;
         private bool friendsIsSelected;
+        private bool invitesIsSelected;
 
         public GroupModel SelectedGroup //выбранная группа
         {
@@ -89,8 +90,8 @@ namespace TTMClient.ModelViews
                 }
             }
         }
-        public bool FriendsIsSelected 
-        { 
+        public bool FriendsIsSelected
+        {
             get => friendsIsSelected;
             set
             {
@@ -102,26 +103,37 @@ namespace TTMClient.ModelViews
                 }
             }
         }
-        public bool InvitesIsSelected { get; set; }
+        public bool InvitesIsSelected 
+        { 
+            get => invitesIsSelected;
+            set
+            {
+                invitesIsSelected = value;
+                if (invitesIsSelected)
+                {
+                    DisplayableListControl = new UserControls.Lists.InvitesListControl();
+                    DisplayableListControl.DataContext = this;
+                }
+            }
+        }
 
         public UserModel User { get; set; } //авторизованный юзер
 
         public ObservableCollection<GroupModel> Groups { get; set; }
         public ObservableCollection<UserModel> Friends { get; set; }
+        public ObservableCollection<InviteModel> Invites { get; set; }
 
         public MainModelView()
         {
             client = new HttpClient();
             Groups = new ObservableCollection<GroupModel>();
             Friends = new ObservableCollection<UserModel>();
+            Invites = new ObservableCollection<InviteModel>();
 
-            User = new UserModel(new TTMLibrary.Models.User { Login = "1", Password = "1" });
-            ChatsIsSelected = true;
-
-            GetToken();
-            LoadUserChats();
-            LoadUserFriends();
-            ConnectToHub();
+            //GetToken();
+            //LoadUserChats();
+            //LoadUserFriends();
+            //ConnectToHub();
         }
 
         public MainModelView(User user) : base()
