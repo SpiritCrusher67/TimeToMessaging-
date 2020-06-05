@@ -9,15 +9,21 @@
              
              mc:Ignorable="d" 
              d:DesignHeight="710" Width="auto">
-    <UserControl.DataContext>
+    <!--<UserControl.DataContext>
         <mv:GroupViewModel/>
-    </UserControl.DataContext>
+    </UserControl.DataContext>-->
     <UserControl.Resources>
-        <SolidColorBrush x:Key="Color3" Color="#FF35383F" />
         <SolidColorBrush x:Key="ChatTextFieltBrush" Color="#FF464950" />
         <SolidColorBrush x:Key="ChatButtonBrush" Color="#FF979797" />
         <SolidColorBrush x:Key="TextBrush1" Color="#FF979797" />
         <SolidColorBrush x:Key="TextBrush2" Color="#FFCDCDCD" />
+        <SolidColorBrush x:Key="Color1" Color="#FF1F2025" />
+        <SolidColorBrush x:Key="Color2" Color="#FF2E2F34" />
+        <SolidColorBrush x:Key="Color3" Color="#FF35383F" />
+        <SolidColorBrush x:Key="Color4" Color="#FF484A53" />
+        <SolidColorBrush x:Key="Color5" Color="#FF2E2F34" />
+        <SolidColorBrush x:Key="BorderColor1" Color="#FFC2C3C5"/>
+        <SolidColorBrush x:Key="RedColor" Color="#FFEC4846"/>
     </UserControl.Resources>
     <Grid Background="{StaticResource Color3}">
         <materialDesign:ColorZone Mode="Dark" Background="{StaticResource Color3}" Height="72" >
@@ -45,27 +51,41 @@
                             </ListBoxItem>
                         </ListBox>
                     </materialDesign:PopupBox>
-                    <materialDesign:PopupBox  DockPanel.Dock="Right" PlacementMode="BottomAndAlignRightEdges" Margin=" 0 15 7 0">
-                        <ListBox>
-                            <ListBoxItem>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="UserAdd" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                                    <TextBlock Margin="15 0 0 0" Text="Добавить пользователя" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </ListBoxItem>
-                            <ListBoxItem>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Users" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                                    <TextBlock Margin="15 0 0 0" Text="Пользователи" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </ListBoxItem>
-                            <ListBoxItem>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="LocationExit" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                                    <TextBlock Margin="15 0 0 0" Text="Покинуть" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </ListBoxItem>
-                        </ListBox>
+                    <materialDesign:PopupBox DockPanel.Dock="Right" PlacementMode="BottomAndAlignRightEdges" Margin=" 0 15 7 0">
+                        <materialDesign:PopupBox.ToggleContent>
+                            <materialDesign:PackIcon Kind="UserAdd" Height="30" Width="30" Foreground="White"/>
+                        </materialDesign:PopupBox.ToggleContent>
+                        
+                        <StackPanel Margin="0" Orientation="Vertical">
+                            <TextBlock HorizontalAlignment="Center" FontWeight="Bold" FontSize="18" Text="Пригласить в чат" Foreground="{StaticResource Color2}"/>
+                            <ListBox Background="{StaticResource Color4}" Margin="10" Grid.Row="2" ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUser}" Grid.IsSharedSizeScope="True" >
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border x:Name="Border" Width="385" Padding="08" Margin="0" BorderThickness="0 0 0 1" BorderBrush="{DynamicResource MaterialDesignDivider}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition SharedSizeGroup="Checkerz" />
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid Height="40" Width="40">
+                                                    <Ellipse Width="40" Height="40" Fill="AliceBlue" Opacity="0.85"/>
+                                                    <TextBlock Text="F" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{Binding CharColor}" FontWeight="Bold" FontSize="20"/>
+                                                </Grid>
+                                                <StackPanel Margin="8 0 0 0" Grid.Column="1" Orientation="Horizontal">
+                                                    <TextBlock FontWeight="Bold" FontSize="18" Text="{Binding Login}" VerticalAlignment="Center" Foreground="{StaticResource TextBrush2}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
                     </materialDesign:PopupBox>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center" Foreground="{StaticResource TextBrush2}" Margin="16 15 0 0" Text="{Binding Group.Name}" FontSize="30"/>

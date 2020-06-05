@@ -41,7 +41,7 @@ namespace Server.Controllers
         public async Task<ActionResult<IEnumerable<Guid>>> Get(string login)
         {
             var user = await db.Users.Include("Invites").Where(u => u.Login == login).FirstOrDefaultAsync();
-            return user.Invites.Select(g => g.Id).ToList();
+            return user.Invites.Where(i=> i.Status == IviteStatus.Sended).Select(g => g.Id).ToList();
         }
         [HttpGet("{login}/{id}")]
         public async Task<ActionResult<Invite>> Get(string login, Guid id)

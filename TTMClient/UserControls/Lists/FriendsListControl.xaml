@@ -19,7 +19,7 @@
         <SolidColorBrush x:Key="TextBrush2" Color="#FFCDCDCD" />
         <SolidColorBrush x:Key="RedColor" Color="#FFEC4846"/>
     </UserControl.Resources>
-    <ListBox Grid.Row="2" ItemsSource="{Binding Friends}" SelectedItem="{Binding SelectedGroup}" Grid.IsSharedSizeScope="True" >
+    <ListBox Grid.Row="2" ItemsSource="{Binding Friends}" SelectedItem="{Binding SelectedFriend}" Grid.IsSharedSizeScope="True" >
         <ListBox.ItemTemplate>
             <DataTemplate>
                 <Border x:Name="Border" Width="385" Padding="08" Margin="0" BorderThickness="0 0 0 1" BorderBrush="{DynamicResource MaterialDesignDivider}">

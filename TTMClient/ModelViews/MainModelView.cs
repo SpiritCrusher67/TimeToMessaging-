@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -19,6 +20,7 @@ using System.Windows;
 using System.Windows.Controls;
 using TTMClient.Models;
 using TTMClient.UserControls;
+using TTMClient.UserControls.Lists;
 using TTMLibrary.Models;
 
 
@@ -30,12 +32,36 @@ namespace TTMClient.ModelViews
         HttpClient client; //клиент для запросов к апи
         private UserControl displayableControl;
         private UserControl displayableListControl;
+        private UserModel selectedFriend;
+
+        private List<UserModel> friendsTmp;
 
         HubConnection connection; //подключение к хабу
         string token;
         private bool chatsIsSelected;
         private bool friendsIsSelected;
         private bool invitesIsSelected;
+
+        public string SearchText { get; set; }
+
+        public UserModel SelectedFriend
+        {
+            get => selectedFriend; 
+            set
+            { 
+                selectedFriend = value;
+                if (selectedFriend != null)
+                {
+                    if (!(DisplayableControl is UserControls.UserProfileControl))
+                    {
+                        DisplayableControl = new UserProfileControl();
+                        
+                    }
+                    DisplayableControl.DataContext = selectedFriend;
+                }
+                RaisePropertyChanged();
+            }
+        }
 
         public GroupModel SelectedGroup //выбранная группа
         {
@@ -49,7 +75,8 @@ namespace TTMClient.ModelViews
                     {
                         DisplayableControl = new ChatControl();
                     }
-                    DisplayableControl.DataContext = new GroupViewModel(selectedGroup, User, connection);
+                    DisplayableControl.DataContext = new GroupViewModel(selectedGroup, User, connection, client, group => Groups.Add(new GroupModel(group)), friendsTmp);
+
                 }
                 RaisePropertyChanged();
             }
@@ -123,68 +150,100 @@ namespace TTMClient.ModelViews
         public ObservableCollection<UserModel> Friends { get; set; }
         public ObservableCollection<InviteModel> Invites { get; set; }
 
-        public MainModelView()
+        public MainModelView(User user)
         {
+            User = new UserModel(user,client,connection,user.Login);
             client = new HttpClient();
             Groups = new ObservableCollection<GroupModel>();
             Friends = new ObservableCollection<UserModel>();
             Invites = new ObservableCollection<InviteModel>();
-
-            //GetToken();
-            //LoadUserChats();
-            //LoadUserFriends();
-            //ConnectToHub();
-        }
-
-        public MainModelView(User user) : base()
-        {
-            User = new UserModel(user);
-
-            LoadUserChats();
+            ChatsIsSelected = true;
+            friendsTmp = new List<UserModel>();
 
             GetToken();
+            LoadUserChats();
+            LoadUserFriends();
+            LoadUserInvites();
             ConnectToHub();
         }
 
         public async void LoadUserChats() //загрузка чатов
         {
+            Groups.Clear();
             var groupIds = await GetUserGroupsIds();
             var groups = new List<Group>();
-            await Task.Run(() =>
+            if (groupIds != null)
             {
-                foreach (var id in groupIds)
+                await Task.Run(() =>
                 {
-                    var response = client.GetAsync($"https://localhost:44347/api/Group/{User.Login}/{id}").Result;
-                    var jsonObj = response.Content.ReadAsStringAsync().Result;
-                    groups.Add(JsonConvert.DeserializeObject<Group>(jsonObj));
+                    foreach (var id in groupIds)
+                    {
+                        var response = client.GetAsync($"https://localhost:44347/api/Group/{User.Login}/{id}").Result;
+                        var jsonObj = response.Content.ReadAsStringAsync().Result;
+                        groups.Add(JsonConvert.DeserializeObject<Group>(jsonObj));
+                    }
+                });
+                foreach (var group in groups)
+                {
+                    Groups.Add(new GroupModel(group));
                 }
-            });
-
-            foreach (var group in groups)
-            {
-                Groups.Add(new GroupModel(group));
             }
-
+      
         }
         public async void LoadUserFriends() //загрузка друзей
         {
+            Friends.Clear();
             var logins = await GetUserFriendsLogins();
             var users = new List<User>();
+            if (logins != null)
+            {
+                await Task.Run(() =>
+                {
+                    foreach (var login in logins)
+                    {
+                        var response = client.GetAsync($"https://localhost:44347/api/User/{User.Login}/{login}").Result;
+                        var jsonObj = response.Content.ReadAsStringAsync().Result;
+                        users.Add(JsonConvert.DeserializeObject<User>(jsonObj));
+                    }
+                });
+
+                foreach (var user in users)
+                {
+                    var userTmp = new UserModel(user, client, connection, User.Login);
+                    Friends.Add(userTmp);
+                    friendsTmp.Add(userTmp);
+                }
+            }
+
+        }
+        public async void LoadUserInvites() //загрузка приглашений
+        {
+            var ids = await GetUserInvitesIds();
+            var invites = new List<Invite>();
             await Task.Run(() =>
             {
-                foreach (var login in logins)
+                foreach (var id in ids)
                 {
-                    var response = client.GetAsync($"https://localhost:44347/api/User/{User.Login}/{login}").Result;
+                    var response = client.GetAsync($"https://localhost:44347/api/Invite/{User.Login}/{id}").Result;
                     var jsonObj = response.Content.ReadAsStringAsync().Result;
-                    users.Add(JsonConvert.DeserializeObject<User>(jsonObj));
+                    invites.Add(JsonConvert.DeserializeObject<Invite>(jsonObj));
                 }
             });
 
-            foreach (var user in users)
+            foreach (var invite in invites)
             {
-                Friends.Add(new UserModel(user));
+                Invites.Add(new InviteModel(invite, client,connection,invite => { LoadUserChats(); LoadUserFriends(); Invites.Remove(invite); } ));
             }
-
+        }
+        async Task<List<Guid>> GetUserInvitesIds() //получение списка групп юзера
+        {
+            var response = client.GetAsync("https://localhost:44347/api/Invite/" + User.Login).Result;
+            if (response != null)
+            {
+                var jsonString = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<List<Guid>>(jsonString);
+            }
+            return null;
         }
         async Task<List<Guid>> GetUserGroupsIds() //получение списка групп юзера
         {
@@ -206,6 +265,8 @@ namespace TTMClient.ModelViews
             }
             return null;
         }
+
+
 
         #region HubConnection
         async void GetToken()
@@ -266,7 +327,53 @@ namespace TTMClient.ModelViews
             get => new RelayCommand(() =>
             {
                 DisplayableControl = new GroupControl();
-                DisplayableControl.DataContext = new GroupViewModel(null, User, connection, client, group => Groups.Add(new GroupModel(group)));
+                DisplayableControl.DataContext = new GroupViewModel(null, User, connection, client, group => Groups.Add(new GroupModel(group)),Friends);
+            });
+        }
+        public RelayCommand SearchCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                if (FriendsIsSelected)
+                {
+                    if (SearchText != string.Empty)
+                    {
+                        var friends = friendsTmp.Where(f => f.Login == SearchText);
+                        if (friends.Count() > 0)
+                        {
+                            Friends.Clear();
+                            foreach (var item in friends)
+                            {
+                                Friends.Add(item);
+                            }
+                        }
+                        else
+                        {
+                            var response = client.GetAsync($"https://localhost:44347/api/User/Search/{SearchText}").Result;
+                            var jsonObj = response.Content.ReadAsStringAsync().Result;
+                            var list = (JsonConvert.DeserializeObject<List<User>>(jsonObj));
+
+                            if (list.Count > 0)
+                            {
+                                Friends.Clear();
+
+                                foreach (var item in list)
+                                {
+                                    Friends.Add(new UserModel(item,client,connection,User.Login));
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Friends.Clear();
+                        foreach (var item in friendsTmp)
+                        {
+                            Friends.Add(item);
+                        }
+                    }
+                    
+                }
             });
         }
         #endregion

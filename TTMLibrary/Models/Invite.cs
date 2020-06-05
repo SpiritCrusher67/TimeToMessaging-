@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace TTMLibrary.Models
 {
@@ -14,7 +15,7 @@ namespace TTMLibrary.Models
         public string UserLogin { get; set; }
         public User User { get; set; }
 
-        public Guid GroupId { get; set; }
+        public Guid? GroupId { get; set; }
         public Group Group { get; set; }
 
         public Invite()

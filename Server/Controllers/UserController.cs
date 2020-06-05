@@ -24,13 +24,44 @@ namespace Server.Controllers
         public async Task<ActionResult<IEnumerable<string>>> Get(string login)
         {
             var user = await db.Users.Include("Friends").Where(u => u.Login == login).FirstOrDefaultAsync();
-            return user.Friends.Select(f => f.FriendId).ToList();
+            if (user.Friends?.Count > 0)
+            {
+                return user.Friends.Select(f => f.FriendId).ToList();
+
+            }
+            return null;
+        }
+
+        [HttpPost]
+        public async Task Post(User user)
+        {
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
         }
 
         [HttpGet("{login}/{friendId}")]
         public async Task<ActionResult<User>> Get(string login, string friendId)
         {
             return await db.Users.FindAsync(friendId);
+        }
+
+        [HttpGet("Search/{text}")]
+        public async Task<ActionResult<ICollection<User>>> Search(string text)
+        {
+            return await db.Users.Where(u => u.Login.Contains(text)).ToListAsync();
+        }
+
+        [HttpGet("AddFriend/{login}/{friendId}")]
+        public async Task Add(string login, string friendId)
+        {
+            var user = await db.Users.Include("Friends").Where(u => u.Login == login).FirstOrDefaultAsync();
+            var friend = await db.Users.Include("Friends").Where(u => u.Login == friendId).FirstOrDefaultAsync();
+            user.Friends.Add(new UserUser { UserId = login, FriendId = friendId });
+            friend.Friends.Add(new UserUser { UserId = friendId, FriendId = login });
+            db.Update(user);
+            db.Update(friend);
+
+            await db.SaveChangesAsync();
         }
     }
 }

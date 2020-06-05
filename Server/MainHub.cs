@@ -25,9 +25,9 @@ namespace Server
             await Groups.AddToGroupAsync(Context.ConnectionId,groupId);
         }
 
-        public async Task SendInviteToGroup(string userLogin, Invite invite)
+        public async Task SendInviteToGroup(Invite invite)
         {
-            await Clients.User(userLogin).SendAsync("ReceiveInviteToGroup", invite);
+            await Clients.User(invite.UserLogin).SendAsync("ReceiveInviteToGroup", invite);
         }
 
     }

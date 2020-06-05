@@ -40,12 +40,27 @@ namespace Server.Controllers
         public async Task<ActionResult<IEnumerable<Guid>>> Get(string login)
         {
             var user = await db.Users.Include("Groups").Where(u => u.Login==login).FirstOrDefaultAsync();
-            return user.Groups.Select(g => g.GroupId).ToList();
+            return user?.Groups.Select(g => g.GroupId).ToList();
         }
         [HttpGet("{login}/{id}")]
         public async Task<ActionResult<Group>> Get(string login, Guid id)
         {
-            var group = await db.Groups.Where(g => g.Id == id).FirstOrDefaultAsync();
+            var group = await db.Groups.Include("Users").Where(g => g.Id == id).FirstOrDefaultAsync();
+            return group;
+        }
+        [HttpGet("UsersList/{groupId}")]
+        public async Task<ActionResult<IEnumerable<string>>> Get(Guid groupId)
+        {
+            var group = await db.Groups.Include("Users").Where(g => g.Id == groupId).FirstOrDefaultAsync();
+            return group.Users.Select(g => g.UserLogin).ToList();
+        }
+        [HttpGet("AddUser/{groupId}/{userLogin}")]
+        public async Task<Group> Get(Guid groupId, string userLogin)
+        {
+            var group = await db.Groups.Include("Users").Where(g => g.Id == groupId).FirstOrDefaultAsync();
+            group.Users.Add(new UserGroup(groupId, userLogin));
+            db.Update(group);
+            await db.SaveChangesAsync();
             return group;
         }
         //обновление группы

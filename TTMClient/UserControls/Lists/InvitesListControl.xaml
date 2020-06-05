@@ -51,6 +51,7 @@
                                     Foreground="{StaticResource GreenColor}"
                                     Padding="5"
                                     Margin="0 0 5 0"
+                                    Command="{Binding AcceptInviteCommand}"
                                     Style="{StaticResource MaterialDesignFlatButton}">
                                     ПРИНЯТЬ
                                 </Button>
@@ -59,6 +60,7 @@
                                     Height="40"
                                     Foreground="{StaticResource RedColor}"
                                     Padding="5"
+                                    Command="{Binding CancelInviteCommand}"
                                     Style="{StaticResource MaterialDesignFlatButton}">
                                     <materialDesign:PackIcon Kind="Close" Width="20" Height="20" />
                                 </Button>

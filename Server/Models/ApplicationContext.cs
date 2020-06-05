@@ -18,7 +18,7 @@ namespace Server.Models
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
                 : base(options)
         {
-           var g= Database.EnsureCreated();
+           Database.EnsureCreated();
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,20 +42,19 @@ namespace Server.Models
                 .HasMany(u => u.Users);
 
             modelBuilder.Entity<UserUser>()
-                .HasKey(uu => uu.UserId);
-
-            modelBuilder.Entity<UserUser>()
-                .HasKey(uu => uu.FriendId);
+                .HasKey(uu => new { uu.UserId, uu.FriendId });
 
             modelBuilder.Entity<UserUser>()
                 .HasOne(uu => uu.User)
                 .WithMany(u => u.Friends)
-                .HasForeignKey(uu => uu.UserId);
+                .HasForeignKey(uu => uu.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<UserUser>()
                   .HasOne(uu => uu.Friend)
                   .WithMany(u => u.Users)
-                  .HasForeignKey(uu => uu.FriendId);
+                  .HasForeignKey(uu => uu.FriendId)
+                  .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Invite>()
                 .HasOne(i => i.User)
@@ -66,6 +65,8 @@ namespace Server.Models
                 .HasOne(i => i.Sender)
                 .WithMany(u => u.SendedInvites)
                 .HasForeignKey(i => i.SenderLogin);
+
+                
 
             User User1 = new User { Login = "1", Password = "1" };
             User User2 = new User { Login = "2", Password = "2" };
