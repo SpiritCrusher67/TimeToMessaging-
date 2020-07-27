@@ -20,32 +20,31 @@
         <SolidColorBrush x:Key="RedColor" Color="#FFEC4846"/>
         <SolidColorBrush x:Key="GreenColor" Color="#FF55CF49"/>
     </UserControl.Resources>
-    <Grid Background="{StaticResource Color3}">
-        <ItemsControl Grid.Row="2" ItemsSource="{Binding Invites}" Grid.IsSharedSizeScope="True" >
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Border x:Name="Border" Width="385" Padding="08" Margin="0" BorderThickness="0 0 0 1" BorderBrush="{DynamicResource MaterialDesignDivider}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition SharedSizeGroup="Checkerz" />
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="auto"/>
-                            </Grid.ColumnDefinitions>
+    <ItemsControl Grid.Row="2" ItemsSource="{Binding Invites}" Grid.IsSharedSizeScope="True" >
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Border x:Name="Border" Width="385" Padding="08" Margin="0" BorderThickness="0 0 0 1" BorderBrush="{DynamicResource MaterialDesignDivider}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition SharedSizeGroup="Checkerz" />
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
 
-                            <Grid Height="40" Width="40">
-                                <Ellipse Width="40" Height="40" Fill="Green" Opacity="0.85"/>
-                                <TextBlock Text="{Binding SenderLogin[0]}" Foreground="{StaticResource TextBrush2}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20"/>
-                            </Grid>
+                        <Grid Height="40" Width="40">
+                            <Ellipse Width="40" Height="40" Fill="Green" Opacity="0.85"/>
+                            <TextBlock Text="{Binding SenderLogin[0]}" Foreground="{StaticResource TextBrush2}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20"/>
+                        </Grid>
 
-                            <StackPanel Margin="8 0 0 0" Grid.Column="1">
-                                <TextBlock FontWeight="Bold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MaxWidth="205" Text="{Binding InviteHeader}" Foreground="{StaticResource TextBrush2}"/>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="От " Margin="0 5 0 0" Foreground="{StaticResource TextBrush2}"/>
-                                    <TextBlock Text="{Binding SenderLogin}" MaxWidth="205" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0 5 0 0" Foreground="{StaticResource TextBrush2}"/>
-                                </StackPanel>
+                        <StackPanel Margin="8 0 0 0" Grid.Column="1">
+                            <TextBlock FontWeight="Bold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MaxWidth="205" Text="{Binding InviteHeader}" Foreground="{StaticResource TextBrush2}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="От " Margin="0 5 0 0" Foreground="{StaticResource TextBrush2}"/>
+                                <TextBlock Text="{Binding SenderLogin}" MaxWidth="205" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0 5 0 0" Foreground="{StaticResource TextBrush2}"/>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Height="auto" Width="auto" Grid.Column="2" Margin="5 0 0 0">
-                                <Button
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Height="auto" Width="auto" Grid.Column="2" Margin="5 0 0 0">
+                            <Button
                                     VerticalAlignment="Center"
                                     Height="40"
                                     Foreground="{StaticResource GreenColor}"
@@ -53,28 +52,27 @@
                                     Margin="0 0 5 0"
                                     Command="{Binding AcceptInviteCommand}"
                                     Style="{StaticResource MaterialDesignFlatButton}">
-                                    ПРИНЯТЬ
-                                </Button>
-                                <Button
+                                ПРИНЯТЬ
+                            </Button>
+                            <Button
                                     VerticalAlignment="Center"
                                     Height="40"
                                     Foreground="{StaticResource RedColor}"
                                     Padding="5"
                                     Command="{Binding CancelInviteCommand}"
                                     Style="{StaticResource MaterialDesignFlatButton}">
-                                    <materialDesign:PackIcon Kind="Close" Width="20" Height="20" />
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
+                                <materialDesign:PackIcon Kind="Close" Width="20" Height="20" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-                    <DataTemplate.Triggers>
-                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
-                        </DataTrigger>
-                    </DataTemplate.Triggers>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                        <Setter TargetName="Border" Property="Background" Value="{DynamicResource MaterialDesignSelection}" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
 </UserControl>

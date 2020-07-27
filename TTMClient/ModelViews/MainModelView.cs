@@ -266,8 +266,6 @@ namespace TTMClient.ModelViews
             return null;
         }
 
-
-
         #region HubConnection
         async void GetToken()
         {

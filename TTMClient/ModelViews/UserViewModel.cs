@@ -27,7 +27,7 @@ namespace TTMClient.ModelViews
         async Task<string> GetToken()
         {
             string token = string.Empty;
-            string data = $"login={User.Login}&password={User.Password}";
+            string data = $"login={User.Login}&password=User.Password";
             var content = new StringContent(data);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             var response = client.PostAsync("https://localhost:44347/token", content).Result;
@@ -62,7 +62,7 @@ namespace TTMClient.ModelViews
                     Application.Current.Windows[0].Close();
                 }
             },
-                () => User.Login != string.Empty && User.Password != string.Empty);
+                () => User.Login != string.Empty && "User.Password" != string.Empty);
         }
 
         public RelayCommand SinginCommand
@@ -82,7 +82,7 @@ namespace TTMClient.ModelViews
             {
                 await CreateAccount();
             },
-                () => User.Login != string.Empty && User.Password != string.Empty && User.Password == SecondPassword);
+                () => User.Login != string.Empty && "User.Password" != string.Empty && "User.Password" == SecondPassword);
         }
         public RelayCommand CancelCommand
         {

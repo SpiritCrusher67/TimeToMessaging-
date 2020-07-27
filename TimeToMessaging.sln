@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTMLibrary", "TTMLibrary\TT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTMClient", "TTMClient\TTMClient.csproj", "{C1F50BE3-9DC6-4188-8AEA-3B4B43A480EA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeToMessaging.Tests", "TimeToMessaging.Tests\TimeToMessaging.Tests.csproj", "{B1B7E76A-7AB2-44E5-AA71-E2C5AE0ED171}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{C1F50BE3-9DC6-4188-8AEA-3B4B43A480EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1F50BE3-9DC6-4188-8AEA-3B4B43A480EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1F50BE3-9DC6-4188-8AEA-3B4B43A480EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1B7E76A-7AB2-44E5-AA71-E2C5AE0ED171}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1B7E76A-7AB2-44E5-AA71-E2C5AE0ED171}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1B7E76A-7AB2-44E5-AA71-E2C5AE0ED171}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1B7E76A-7AB2-44E5-AA71-E2C5AE0ED171}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

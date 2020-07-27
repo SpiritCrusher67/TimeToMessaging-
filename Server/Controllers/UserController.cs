@@ -1,67 +1,90 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Server.Services;
+using Server.Services.Builders;
 using Server.Models;
 using TTMLibrary.Models;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
+    [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        ApplicationContext db;
-        public UserController(ApplicationContext context)
+        UsersService _usersService;
+        public UserController(UsersService usersService)
         {
-            db = context;
+            _usersService = usersService;
         }
 
-        [HttpGet("{login}")]
-        public async Task<ActionResult<IEnumerable<string>>> Get(string login)
+        [AllowAnonymous]
+        [HttpPost("/[controller]/token")]
+        public async Task<IActionResult> Token(string login, string password)
         {
-            var user = await db.Users.Include("Friends").Where(u => u.Login == login).FirstOrDefaultAsync();
-            if (user.Friends?.Count > 0)
+            var identity = await GetIdentity(login, password);
+            if (identity == null)
             {
-                return user.Friends.Select(f => f.FriendId).ToList();
-
+                return BadRequest("Invalid username or password.");
             }
+
+            var now = DateTime.UtcNow;
+            // создаем токен
+            var jwt = new JwtSecurityToken(
+                    issuer: AuthOptions.ISSUER,
+                    notBefore: now,
+                    claims: identity.Claims,
+                    expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
+                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+            var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+            //var response = new
+            //{
+            //    access_token = encodedJwt,
+            //    login = identity.Name
+            //};
+            return Ok(encodedJwt);
+        }
+
+        private async Task<ClaimsIdentity> GetIdentity(string login, string password)
+        {
+            User person = await _usersService.GetUser(login, password);
+            if (person != null)
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, person.Login),
+                };
+                ClaimsIdentity claimsIdentity =
+                new ClaimsIdentity(claims, "Token");
+                return claimsIdentity;
+            }
+            // если пользователь не найден
             return null;
         }
 
-        [HttpPost]
-        public async Task Post(User user)
+        [HttpGet]
+        public async Task<IActionResult> GetFullUserData()
         {
-            db.Users.Add(user);
-            await db.SaveChangesAsync();
+            return Ok(await _usersService.GetUser(HttpContext.User.Identity.Name, new FullUserBuilder()));
         }
 
-        [HttpGet("{login}/{friendId}")]
-        public async Task<ActionResult<User>> Get(string login, string friendId)
+        [HttpGet("/[controller]/getUser/{login}")]
+        public async Task<IActionResult> GetUserData(string login)
         {
-            return await db.Users.FindAsync(friendId);
+            return Ok(await _usersService.GetUser(login, new UserBuilder()));
         }
 
-        [HttpGet("Search/{text}")]
-        public async Task<ActionResult<ICollection<User>>> Search(string text)
-        {
-            return await db.Users.Where(u => u.Login.Contains(text)).ToListAsync();
-        }
-
-        [HttpGet("AddFriend/{login}/{friendId}")]
-        public async Task Add(string login, string friendId)
-        {
-            var user = await db.Users.Include("Friends").Where(u => u.Login == login).FirstOrDefaultAsync();
-            var friend = await db.Users.Include("Friends").Where(u => u.Login == friendId).FirstOrDefaultAsync();
-            user.Friends.Add(new UserUser { UserId = login, FriendId = friendId });
-            friend.Friends.Add(new UserUser { UserId = friendId, FriendId = login });
-            db.Update(user);
-            db.Update(friend);
-
-            await db.SaveChangesAsync();
-        }
     }
 }

@@ -10,7 +10,7 @@ namespace Server.Models
 {
     public class ApplicationContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
+        public virtual DbSet<UserModel> Users { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<Invite> Invites { get; set; }
         public DbSet<Message> Messages { get; set; }
@@ -19,6 +19,11 @@ namespace Server.Models
                 : base(options)
         {
            Database.EnsureCreated();
+        }
+
+        public ApplicationContext()
+        {
+
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,24 +40,24 @@ namespace Server.Models
                 .WithMany(g => g.Users)
                 .HasForeignKey(ug => ug.GroupId);
 
-            modelBuilder.Entity<User>()
+            modelBuilder.Entity<UserModel>()
                 .HasKey(u => u.Login);
 
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Users);
+            modelBuilder.Entity<UserModel>()
+                .HasMany(u => u.Users2);
 
             modelBuilder.Entity<UserUser>()
                 .HasKey(uu => new { uu.UserId, uu.FriendId });
 
             modelBuilder.Entity<UserUser>()
                 .HasOne(uu => uu.User)
-                .WithMany(u => u.Friends)
+                .WithMany(u => u.Users1)
                 .HasForeignKey(uu => uu.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<UserUser>()
                   .HasOne(uu => uu.Friend)
-                  .WithMany(u => u.Users)
+                  .WithMany(u => u.Users2)
                   .HasForeignKey(uu => uu.FriendId)
                   .OnDelete(DeleteBehavior.NoAction);
 
@@ -65,13 +70,7 @@ namespace Server.Models
                 .HasOne(i => i.Sender)
                 .WithMany(u => u.SendedInvites)
                 .HasForeignKey(i => i.SenderLogin);
-
-                
-
-            User User1 = new User { Login = "1", Password = "1" };
-            User User2 = new User { Login = "2", Password = "2" };
-            modelBuilder.Entity<User>()
-                .HasData(new User[] { User1, User2 });
+               
         }
     }
 

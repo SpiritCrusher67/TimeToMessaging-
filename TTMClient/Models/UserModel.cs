@@ -28,7 +28,7 @@ namespace TTMClient.Models
         }
 
         public string Login { get => user.Login; }
-        public string Password { get => user.Password; set => user.Password = value; }
+        public string Password { get => ""; set => value = ""; }
         public RelayCommand SendInviteCommand
         {
             get => new RelayCommand(async () =>

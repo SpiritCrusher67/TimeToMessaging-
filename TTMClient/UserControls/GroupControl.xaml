@@ -13,9 +13,13 @@
         <mv:GroupViewModel/>
     </UserControl.DataContext>
     <UserControl.Resources>
+        <SolidColorBrush x:Key="Color1" Color="#FF1F2025" />
+        <SolidColorBrush x:Key="Color2" Color="#FF2E2F34" />
         <SolidColorBrush x:Key="Color3" Color="#FF35383F" />
-        <SolidColorBrush x:Key="ChatTextFieltBrush" Color="#FF464950" />
-        <SolidColorBrush x:Key="ChatButtonBrush" Color="#FF979797" />
+        <SolidColorBrush x:Key="Color4" Color="#FF484A53" />
+        <SolidColorBrush x:Key="Color5" Color="#FF2E2F34" />
+        <SolidColorBrush x:Key="Color6" Color="#FF6D6D7C" />
+        <SolidColorBrush x:Key="BorderColor1" Color="#FFC2C3C5"/>
         <SolidColorBrush x:Key="TextBrush1" Color="#FF979797" />
         <SolidColorBrush x:Key="TextBrush2" Color="#FFCDCDCD" />
         <SolidColorBrush x:Key="RedColor" Color="#FFEC4846"/>
@@ -43,7 +47,7 @@
                 Margin="0">
                 <GroupBox.HeaderTemplate>
                     <DataTemplate>
-                        <StackPanel Background="{StaticResource RedColor}"
+                        <StackPanel Background="{StaticResource Color6}"
                                     
                             Orientation="Horizontal">
                             <materialDesign:PackIcon
@@ -85,7 +89,7 @@
                 Style="{DynamicResource MaterialDesignHeaderedContentControl}">
                 <GroupBox.HeaderTemplate>
                     <DataTemplate>
-                        <StackPanel Background="{StaticResource RedColor}"
+                        <StackPanel Background="{StaticResource Color6}"
                                     
                             Orientation="Horizontal">
                             <materialDesign:PackIcon

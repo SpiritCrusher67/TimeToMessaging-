@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Server.Controllers;
+using Server.Services;
 using Server.Models;
 
 namespace Server
@@ -39,11 +40,10 @@ namespace Server
                     {
                         ValidateIssuer = true,
                         ValidIssuer = AuthOptions.ISSUER,
-                        ValidateAudience = true,
-                        ValidAudience = AuthOptions.AUDIENCE,
+                        ValidateAudience = false,
                         ValidateLifetime = true,
                         IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
-                        ValidateIssuerSigningKey = true,
+                        ValidateIssuerSigningKey = true
                     };
                     options.Events = new JwtBearerEvents
                     {
@@ -63,10 +63,13 @@ namespace Server
                         }
                     };
                 });
+
+
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSignalR();
 
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+            services.AddScoped<UsersService>();
 
         }
 
