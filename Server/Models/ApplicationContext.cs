@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
-using TTMLibrary.Models;
 
 namespace Server.Models
 {
     public class ApplicationContext : DbContext
     {
-        public virtual DbSet<UserModel> Users { get; set; }
+        public virtual DbSet<User> Users { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<Invite> Invites { get; set; }
         public DbSet<Message> Messages { get; set; }
@@ -18,7 +17,7 @@ namespace Server.Models
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
                 : base(options)
         {
-           Database.EnsureCreated();
+            Database.EnsureCreated();
         }
 
         public ApplicationContext()
@@ -40,10 +39,10 @@ namespace Server.Models
                 .WithMany(g => g.Users)
                 .HasForeignKey(ug => ug.GroupId);
 
-            modelBuilder.Entity<UserModel>()
+            modelBuilder.Entity<User>()
                 .HasKey(u => u.Login);
 
-            modelBuilder.Entity<UserModel>()
+            modelBuilder.Entity<User>()
                 .HasMany(u => u.Users2);
 
             modelBuilder.Entity<UserUser>()

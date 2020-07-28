@@ -1,39 +1,43 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Server.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TTMLibrary.Models;
+using TTMLibrary.ModelViews;
 
 namespace Server.Services.Builders
 {
     public class FullUserBuilder : UserBuilder
     {
-        public override async Task<User> GetUser(string login)
+        public override async Task<UserModelView> GetUser(string login)
         {
-            var userModel = await _context.Users
-                .Include("Friends")
+            var user = await _context.Users
+                .Include("Users1")
+                .Include("Users2")
                 .Include("Groups")
                 .Include("Invites")
                 .Include("SendedInvites")
                 .Where(u => u.Login == login)
                 .SingleOrDefaultAsync();
-            if (userModel == null) return null;
+            if (user == null) return null;
+            var modelView = new UserModelView(user.Login);
 
-            var user = (User)userModel;
-            await AppendFriends(userModel, user);
+            await AppendAvatar(modelView);
+            await AppendFriends(modelView,user);
 
-            return user;
+            return modelView;
         }
 
-        private async Task AppendFriends(UserModel userModel, User user)
+        private async Task AppendFriends(UserModelView modelView, User user)
         {
-            foreach (var friend in userModel.Users1)
-            {
-                user.Friends.Add(await base.GetUser(friend.Friend.Login));
-            }
+            if (user?.Users1?.Count > 0)
+                foreach (var friend in user.Users1)
+                {
+                    modelView.Friends.Add(await base.GetUser(friend.FriendId));
+                }
         }
     }
 }

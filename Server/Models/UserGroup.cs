@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TTMLibrary.Models
+namespace Server.Models
 {
     public class UserGroup
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace TTMLibrary.Models
+namespace Server.Models
 {
     public class Invite
     {

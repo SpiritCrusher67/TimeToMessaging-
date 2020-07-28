@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using TTMLibrary.ModelViews;
 using System.Threading.Tasks;
-using TTMLibrary.Models;
 
 namespace Server.Services.Builders
 {
@@ -26,17 +26,32 @@ namespace Server.Services.Builders
             _environment = environment;
         }
 
-        public virtual async Task<User> GetUser(string login)
+        public async Task<User> CreateUser(RegistrationModelView modelView)
         {
-            var user = (User)await _context.Users.Where(u => u.Login == login).SingleOrDefaultAsync();
-            if (user == null) return null;
+            if (await _context.Users.Where(u => u.Login == modelView.Login).FirstOrDefaultAsync() != null)
+                return null;
 
-            AppendAvatar(user);
-
-            return user;
+            return new User
+            {
+                Login = modelView.Login,
+                Email = modelView.Email,
+                IsConfirmed = false,
+                Password = modelView.Password
+            };
         }
 
-        protected async void AppendAvatar(User user)
+        public virtual async Task<UserModelView> GetUser(string login)
+        {
+            var user = await _context.Users.Where(u => u.Login == login).SingleOrDefaultAsync();
+            if (user == null) return null;
+            var modelView = new UserModelView(user.Login);
+
+            await AppendAvatar(modelView);
+
+            return modelView;
+        }
+
+        protected async Task AppendAvatar(UserModelView user)
         {
             var avatartPatch = Directory.GetFiles(_environment.WebRootPath + "/Files/Avatars/", $"{user.Login}.*").FirstOrDefault() ??
                 _environment.WebRootPath + "/Files/DefaultFiles/DefaultAvatar.png";

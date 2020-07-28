@@ -13,8 +13,10 @@ using Microsoft.IdentityModel.Tokens;
 using Server.Services;
 using Server.Services.Builders;
 using Server.Models;
-using TTMLibrary.Models;
 using Microsoft.AspNetCore.Hosting;
+using TTMLibrary.ModelViews;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.IO;
 
 namespace Server.Controllers
 {
@@ -57,6 +59,16 @@ namespace Server.Controllers
             return Ok(encodedJwt);
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> CreateUser(RegistrationModelView modelView)
+        {
+            if (ModelState.IsValid && await _usersService.CreateUser(modelView, new UserBuilder()))
+                return Ok();
+
+            return ValidationProblem();
+        }
+
         private async Task<ClaimsIdentity> GetIdentity(string login, string password)
         {
             User person = await _usersService.GetUser(login, password);
@@ -77,14 +89,52 @@ namespace Server.Controllers
         [HttpGet]
         public async Task<IActionResult> GetFullUserData()
         {
-            return Ok(await _usersService.GetUser(HttpContext.User.Identity.Name, new FullUserBuilder()));
+            var modelView = await _usersService.GetUser(HttpContext.User.Identity.Name, new FullUserBuilder());
+
+            if (modelView == null)
+                return BadRequest();
+            return Ok(modelView);
         }
 
         [HttpGet("/[controller]/getUser/{login}")]
         public async Task<IActionResult> GetUserData(string login)
         {
-            return Ok(await _usersService.GetUser(login, new UserBuilder()));
+            var modelView = await _usersService.GetUser(login, new UserBuilder());
+
+            if (modelView == null)
+                return NotFound();
+            return Ok(modelView);
         }
 
+        [HttpPost("/[controller]/uploadAvatar")]
+        public async Task<IActionResult> UploadAvatar(IFormFile avatar)
+        {
+            if (avatar == null)
+                return BadRequest();
+            if (!".jpg|.png|.jpeg".Contains(Path.GetExtension(avatar.FileName).ToLower()))
+                return BadRequest("Не подходящее расширение файла");
+
+            await _usersService.UploadAvatar(avatar, HttpContext.User.Identity.Name);
+
+            return Ok();
+        }
+
+        [HttpPut("/[controller]/changePassword")]
+        public async Task<IActionResult> ChangePassword(PasswordModelView modelView)
+        {
+            if (ModelState.IsValid && await _usersService.ChangePassword(modelView, HttpContext.User.Identity.Name))
+                return Ok();
+
+            return BadRequest();
+        }
+
+        [HttpPut("/[controller]/changeEmail")]
+        public async Task<IActionResult> ChangeEmail(EmailModelView modelView)
+        {
+            if (ModelState.IsValid && await _usersService.ChangeEmail(modelView, HttpContext.User.Identity.Name))
+                return Ok();
+
+            return BadRequest();
+        }
     }
 }

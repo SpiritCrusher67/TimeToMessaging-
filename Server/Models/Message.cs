@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TTMLibrary.Models
+namespace Server.Models
 {
     [Serializable]
     public class Message

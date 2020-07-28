@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using Server.Controllers;
 using Server.Services;
 using Server.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace Server
 {
