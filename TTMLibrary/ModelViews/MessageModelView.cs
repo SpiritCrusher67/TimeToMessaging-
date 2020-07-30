@@ -1,27 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
 
-namespace Server.Models
+namespace TTMLibrary.ModelViews
 {
-    public class Message
+    public class MessageModelView
     {
         public Guid Id { get; set; }
-
-        public string UserId { get; set; }
-        public User User { get; set; }
-
+        [Required]
+        public string SenderLogin { get; set; }
+        [Required]
         public Guid GroupId { get; set; }
-        public Group Group { get; set; }
-
         public DateTime Date { get; set; }
         public string Text { get; set; }
         public string AttachedFileName { get; set; }
 
-        public Message()
-        {
-             
-        }
-
- 
     }
 }

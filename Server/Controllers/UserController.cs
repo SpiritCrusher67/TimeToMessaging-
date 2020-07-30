@@ -1,21 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Server.Services;
 using Server.Services.Builders;
 using Server.Models;
-using Microsoft.AspNetCore.Hosting;
 using TTMLibrary.ModelViews;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.IO;
 
 namespace Server.Controllers
@@ -42,7 +37,7 @@ namespace Server.Controllers
             }
 
             var now = DateTime.UtcNow;
-            // создаем токен
+
             var jwt = new JwtSecurityToken(
                     issuer: AuthOptions.ISSUER,
                     notBefore: now,
@@ -51,11 +46,6 @@ namespace Server.Controllers
                     signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            //var response = new
-            //{
-            //    access_token = encodedJwt,
-            //    login = identity.Name
-            //};
             return Ok(encodedJwt);
         }
 
@@ -82,7 +72,7 @@ namespace Server.Controllers
                 new ClaimsIdentity(claims, "Token");
                 return claimsIdentity;
             }
-            // если пользователь не найден
+            
             return null;
         }
 

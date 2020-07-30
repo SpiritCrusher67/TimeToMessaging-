@@ -71,6 +71,7 @@ namespace Server
 
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddScoped<UsersService>();
+            services.AddScoped<MessageService>();
 
         }
 
