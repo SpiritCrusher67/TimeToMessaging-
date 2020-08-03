@@ -18,6 +18,7 @@ using Server.Controllers;
 using Server.Services;
 using Server.Models;
 using Microsoft.AspNetCore.Http;
+using TTMLibrary.ModelViews;
 
 namespace Server
 {
@@ -70,8 +71,10 @@ namespace Server
             services.AddSignalR();
 
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+            services.AddSingleton<FileService>();
             services.AddScoped<UsersService>();
-            services.AddScoped<MessageService>();
+            services.AddScoped<IEntityService<Message, MessageModelView>,MessageService>();
+            services.AddScoped<IEntityService<Group, GroupModelView>,GroupService>();
 
         }
 

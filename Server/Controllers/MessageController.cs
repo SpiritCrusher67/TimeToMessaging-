@@ -19,8 +19,8 @@ namespace Server.Controllers
     [ApiController]
     public class MessageController : ControllerBase
     {
-        MessageService _messageService;
-        public MessageController(MessageService messageService)
+        IEntityService<Message, MessageModelView> _messageService;
+        public MessageController(IEntityService<Message,MessageModelView> messageService)
         {
             _messageService = messageService;
         }
@@ -31,11 +31,16 @@ namespace Server.Controllers
             if (message.SenderLogin != HttpContext.User.Identity.Name)
                 return BadRequest();
 
-            var builder = attachedFile == null ? new TextMessageBuilder() : new FileMessageBuilder();
-            message = await _messageService.CreateMessage(message, builder, attachedFile);
+            var builder = new MessageBuilder();
+            message = await _messageService.Create(message, builder);
 
             if (message != null)
+            {
+                if (attachedFile != null)
+                    await ((IEntityFilesHandler)_messageService).SaveFile(attachedFile,message.Id.ToString());
+
                 return Ok(message);
+            }
 
             return BadRequest();
         }
@@ -43,7 +48,7 @@ namespace Server.Controllers
         [HttpGet]
         public async Task<ActionResult> GetMessage(Guid messageId)
         {
-            var message = await _messageService.GetMessage(messageId, new TextMessageBuilder());
+            var message = await _messageService.Get(messageId, new MessageBuilder());
 
             if (message == null)
                 return NotFound();
@@ -51,10 +56,10 @@ namespace Server.Controllers
             return Ok(message);
         }
 
-        [HttpGet("api/[controller]/GetAttachedFile")]
+        [HttpGet("/api/[controller]/GetAttachedFile")]
         public async Task<ActionResult> GetAttachedFile(Guid messageId)
         {
-            var (stream, contentType) = await _messageService.GetAttachedFile(messageId);
+            var (stream, contentType) = await ((IEntityFilesHandler)_messageService).GetFile(messageId.ToString());
 
             if (stream == null)
                 return NotFound();
@@ -65,7 +70,7 @@ namespace Server.Controllers
         [HttpDelete]
         public async Task<ActionResult> DeleteMessage(Guid messageId)
         {
-            if (await _messageService.DeleteMessage(messageId, HttpContext.User.Identity.Name))
+            if (await _messageService.Delete(messageId, HttpContext.User.Identity.Name))
                 return Ok();
 
             return NotFound();

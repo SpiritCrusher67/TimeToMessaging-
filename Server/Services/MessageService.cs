@@ -13,63 +13,70 @@ using TTMLibrary.ModelViews;
 
 namespace Server.Services
 {
-    public class MessageService
+    public class MessageService : IEntityService<Message,MessageModelView>, IEntityFilesHandler
     {
         ApplicationContext _context;
-        IWebHostEnvironment _environment;
-        public MessageService(ApplicationContext context, IWebHostEnvironment environment)
+        FileService _fileService;
+        public MessageService(ApplicationContext context, FileService fileService)
         {
             _context = context;
-            _environment = environment;
+            _fileService = fileService;
         }
 
-        public async Task<MessageModelView> GetMessage(Guid messageId, IMessageBuilder builder)
+        public async Task<(Stream,string)> GetFile(string id)
         {
-            builder.ConfigureBuilder(_context, _environment);
+            var message = await _context.Messages.FindAsync(id);
 
-            return await builder.GetMessage(messageId);
+            if (message == null)
+                return (null, null);
+
+            return  await _fileService.GetAttachedFile(message.Id.ToString(), message.AttachedFileName);
         }
 
-        public async Task<MessageModelView> CreateMessage(MessageModelView modelView, IMessageBuilder builder, IFormFile attachedFile = null)
+        public async Task SaveFile(IFormFile file, string innerDirectory, string newFileName = null)
         {
-            builder.ConfigureBuilder(_context, _environment);
+            await _fileService.SaveAttachedFile(file.OpenReadStream(),innerDirectory, file.FileName);
+        }
 
-            var message = await builder.CreateMessage(modelView,attachedFile);
+        public async Task<MessageModelView> Get(object id, IEntityBuilder<Message, MessageModelView> builder)
+        {
+            builder.ConfigureBuilder(_context);
+
+            return await builder.GetModelView(id);
+        }
+
+        public async Task<MessageModelView> Create(MessageModelView modelView, IEntityBuilder<Message, MessageModelView> builder)
+        {
+            builder.ConfigureBuilder(_context);
+
+            var message = await builder.Create(modelView);
 
             await _context.Messages.AddAsync(message);
             await _context.SaveChangesAsync();
 
-            return await GetMessage(message.Id, builder);
+            return await Get(message.Id, builder);
         }
 
-        public async Task<(Stream,string)> GetAttachedFile(Guid messageId)
+        public Task<MessageModelView> Update(MessageModelView modelView)
         {
-            var msg = await _context.Messages.FindAsync(messageId);
-
-            if (msg == null)
-                return (null,null);
-
-            new FileExtensionContentTypeProvider().TryGetContentType(msg.AttachedFileName,out string contentType);
-
-            return (File.OpenRead($"{_environment.WebRootPath}/Files/AttachedFiles/{msg.Id}/{msg.AttachedFileName}"), contentType);
+            throw new NotImplementedException();
         }
 
-        public async Task<bool> DeleteMessage(Guid messageId, string userLogin)
+        public async Task<bool> Delete(object id, string userLogin)
         {
-            var message = await _context.Messages.FindAsync(messageId);
+            var message = await _context.Messages.FindAsync(id);
 
             if (message == null || message.UserId != userLogin)
                 return false;
 
-            var filesDirectory = $"{_environment.WebRootPath}/Files/AttachedFiles/{message.Id}";
-            if (Directory.Exists(filesDirectory))
-                Directory.Delete(filesDirectory, true);
+            await _fileService.DeleteAttachedFile(message.Id.ToString());
 
             _context.Messages.Remove(message);
             await _context.SaveChangesAsync();
 
             return true;
         }
+
 
     }
 }

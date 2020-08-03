@@ -9,20 +9,18 @@ using TTMLibrary.ModelViews;
 
 namespace Server.Services.Builders
 {
-    public class TextMessageBuilder : IMessageBuilder
+    public class MessageBuilder : IEntityBuilder<Message,MessageModelView>
     {
         protected ApplicationContext _context;
-        protected IWebHostEnvironment _environment;
 
-        public void ConfigureBuilder(ApplicationContext context, IWebHostEnvironment environment)
+        public void ConfigureBuilder(ApplicationContext context)
         {
             _context = context;
-            _environment = environment;
         }
 
-        public virtual Task<Message> CreateMessage(MessageModelView modelView, IFormFile file = null)
+        public Task<Message> Create(MessageModelView modelView)
         {
-            var message = new Message
+            return Task.FromResult(new Message
             {
                 Id = Guid.NewGuid(),
                 GroupId = modelView.GroupId,
@@ -30,20 +28,21 @@ namespace Server.Services.Builders
                 Date = DateTime.UtcNow,
                 Text = modelView.Text,
                 AttachedFileName = modelView.AttachedFileName
-            };
-
-            return Task.FromResult(message);
+            });
+            
         }
 
-        public virtual async Task<MessageModelView> GetMessage(Guid id)
+        public async Task<Message> GetEntity(object id) => await _context.Messages.FindAsync(id);
+
+        public async Task<MessageModelView> GetModelView(object id)
         {
             var message = await _context.Messages.FindAsync(id);
 
             if (message == null)
                 return null;
 
-            return new MessageModelView 
-            { 
+            return new MessageModelView
+            {
                 Id = message.Id,
                 SenderLogin = message.UserId,
                 Date = message.Date,
@@ -52,7 +51,5 @@ namespace Server.Services.Builders
                 AttachedFileName = message.AttachedFileName
             };
         }
-
-
     }
 }

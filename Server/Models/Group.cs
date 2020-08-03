@@ -10,22 +10,9 @@ namespace Server.Models
 
         public string CreatorId{ get; set; }
         public User Creator { get; set; }
-        public string Color { get; set; }
 
-        public List<UserGroup> Users { get; set; }
+        public ICollection<UserGroup> Users { get; set; }
         public ICollection<Invite> Invites { get; set; }
-
-        public Group()
-        {
-            Users = new List<UserGroup>();
-
-        }
-        public Group(string creatorLogin, string name) : base()
-        {
-            CreatorId = creatorLogin;
-            Name = name;
-            Invites = new List<Invite>();
-        }
 
     }
 }

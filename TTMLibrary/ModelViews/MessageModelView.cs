@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TTMLibrary.ModelViews
 {
-    public class MessageModelView
+    public class MessageModelView : IEntityModelView
     {
         public Guid Id { get; set; }
         [Required]

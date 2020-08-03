@@ -3,83 +3,96 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Policy;
 using System.Threading.Tasks;
+using BrunoZell.ModelBinding;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using Server.Models;
+using Server.Services;
+using Server.Services.Builders;
+using TTMLibrary.ModelViews;
 
 namespace Server.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class GroupController : ControllerBase
     {
-        ApplicationContext db;
-        public GroupController(ApplicationContext context)
+        IEntityService<Group, GroupModelView> _groupService;
+
+        public GroupController(IEntityService<Group,GroupModelView> entityService)
         {
-            db = context;
+            _groupService = entityService;
         }
 
-        //создание группы
         [HttpPost]
-        public async Task<ActionResult<Group>> Post(Group group)
+        public async Task<ActionResult> CreateGroup([ModelBinder(BinderType = typeof(JsonModelBinder))] GroupModelView modelView, IFormFile avatar = null)
         {
-            db.Groups.Add(group);
-            await db.SaveChangesAsync();
+            if (!ModelState.IsValid)
+                return ValidationProblem();
 
-            group.Users.Add(new UserGroup { GroupId = group.Id, UserLogin = group.CreatorId });
-            await db.SaveChangesAsync();
+            var group = await _groupService.Create(modelView, new GroupBuilder());
+
+            if (group == null)
+                return BadRequest();
+
+            if (avatar != null)
+                await ((IEntityFilesHandler)_groupService).SaveFile(avatar, newFileName: group.Id.ToString());
 
             return Ok(group);
         }
 
-        [HttpGet("{login}")]
-        public async Task<ActionResult<IEnumerable<Guid>>> Get(string login)
+        [HttpGet]
+        public async Task<ActionResult> GetGroup(Guid groupId)
         {
-            var user = await db.Users.Include("Groups").Where(u => u.Login==login).FirstOrDefaultAsync();
-            return user?.Groups.Select(g => g.GroupId).ToList();
+            var group = await _groupService.Get(groupId, new GroupBuilder());
+
+            if (group == null)
+                return NotFound();
+
+            return Ok(group);
         }
-        [HttpGet("{login}/{id}")]
-        public async Task<ActionResult<Group>> Get(string login, Guid id)
+
+        [HttpGet("/api/[controller]/GetAvatar")]
+        public async Task<ActionResult> GetAttachedFile(Guid id)
         {
-            var group = await db.Groups.Include("Users").Where(g => g.Id == id).FirstOrDefaultAsync();
-            return group;
+            var (stream, contentType) = await ((IEntityFilesHandler)_groupService).GetFile(id.ToString());
+
+            if (stream == null)
+                return NotFound();
+
+            return File(stream, contentType);
         }
-        [HttpGet("UsersList/{groupId}")]
-        public async Task<ActionResult<IEnumerable<string>>> Get(Guid groupId)
+
+        [HttpPost("api/[controller]/AddUser")]
+        public async Task<ActionResult> AddUser() //inviteMV
         {
-            var group = await db.Groups.Include("Users").Where(g => g.Id == groupId).FirstOrDefaultAsync();
-            return group.Users.Select(g => g.UserLogin).ToList();
+            return Ok();
         }
-        [HttpGet("AddUser/{groupId}/{userLogin}")]
-        public async Task<Group> Get(Guid groupId, string userLogin)
-        {
-            var group = await db.Groups.Include("Users").Where(g => g.Id == groupId).FirstOrDefaultAsync();
-            group.Users.Add(new UserGroup(groupId, userLogin));
-            db.Update(group);
-            await db.SaveChangesAsync();
-            return group;
-        }
-        //обновление группы
+        
         [HttpPut]
-        public async Task<ActionResult<Group>> Put([FromBody]JObject data)
+        public async Task<ActionResult> UpdateGroup(GroupModelView modelview)
         {
-            var group = data["group"].ToObject<Group>();
-            var userLogin = data["userLogin"].ToString();
+            var group = await _groupService.Update(modelview);
 
-            if (group == null) return BadRequest();
-
-            if (!await db.Groups.AnyAsync(g => g.Id == group.Id && g.CreatorId == userLogin)) return BadRequest(); // существует ли группа и создал ли ее пользователь отправивший запрос
-
-            db.Update(group);
-
-            await db.SaveChangesAsync();
+            if (group == null)
+                return NotFound();
 
             return Ok(group);
         }
 
+        [HttpDelete]
+        public async Task<ActionResult> DeleteGroup(Guid id)
+        {
+            if (await _groupService.Delete(id, HttpContext.User.Identity.Name))
+                return Ok();
+
+            return NotFound();
+        }
 
     }
 }
