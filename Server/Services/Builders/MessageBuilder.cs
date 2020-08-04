@@ -13,7 +13,7 @@ namespace Server.Services.Builders
     {
         protected ApplicationContext _context;
 
-        public void ConfigureBuilder(ApplicationContext context)
+        public void ConfigureBuilder(ApplicationContext context,IWebHostEnvironment environment = null)
         {
             _context = context;
         }

@@ -11,7 +11,7 @@ namespace Server.Services.Builders
     {
         ApplicationContext _context;
 
-        public void ConfigureBuilder(ApplicationContext context)
+        public void ConfigureBuilder(ApplicationContext context, Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment = null)
         {
             _context = context;
         }

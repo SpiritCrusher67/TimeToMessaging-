@@ -72,7 +72,7 @@ namespace Server
 
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddSingleton<FileService>();
-            services.AddScoped<UsersService>();
+            services.AddScoped<IEntityService<User,UserModelView>, UsersService>();
             services.AddScoped<IEntityService<Message, MessageModelView>,MessageService>();
             services.AddScoped<IEntityService<Group, GroupModelView>,GroupService>();
             services.AddScoped<IEntityService<Invite,InviteModelView>,InviteService>();

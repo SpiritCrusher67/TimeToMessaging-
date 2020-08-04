@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Server.Models;
 using System;
 using System.Collections.Generic;
@@ -13,7 +12,7 @@ namespace Server.Services.Builders
     {
         protected ApplicationContext _context;
 
-        public void ConfigureBuilder(ApplicationContext context)
+        public void ConfigureBuilder(ApplicationContext context, Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment = null)
         {
             _context = context;
         }

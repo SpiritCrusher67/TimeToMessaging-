@@ -2,8 +2,13 @@
 
 namespace TTMLibrary.ModelViews
 {
-    public class PasswordModelView
+    public class PasswordModelView : UserModelView
     {
+        public PasswordModelView(string login) : base(login)
+        {
+
+        }
+
         [Required]
         [DataType(DataType.Password)]
         public string OldPassword { get; set; }

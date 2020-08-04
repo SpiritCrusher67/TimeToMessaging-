@@ -8,41 +8,45 @@ using System.IO;
 using System.Linq;
 using TTMLibrary.ModelViews;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace Server.Services.Builders
 {
-    public class UserBuilder : IUserBuilder
+    public class UserBuilder : IEntityBuilder<User,UserModelView>
     {
         protected ApplicationContext _context;
         protected IWebHostEnvironment _environment;
-        public UserBuilder()
-        {
-
-        }
-
-        public void ConfigureBuilder(ApplicationContext context, IWebHostEnvironment environment)
+        public void ConfigureBuilder(ApplicationContext context, IWebHostEnvironment environment = null)
         {
             _context = context;
             _environment = environment;
         }
 
-        public async Task<User> CreateUser(RegistrationModelView modelView)
+        public async Task<User> Create(UserModelView modelView)
         {
-            if (await _context.Users.Where(u => u.Login == modelView.Login).FirstOrDefaultAsync() != null)
+            var regModelView = modelView as RegistrationModelView;
+
+            if (regModelView != null && await _context.Users.Where(u => u.Login == regModelView.Login).FirstOrDefaultAsync() != null)
                 return null;
 
             return new User
             {
-                Login = modelView.Login,
-                Email = modelView.Email,
+                Login = regModelView.Login,
+                Email = regModelView.Email,
                 IsConfirmed = false,
-                Password = modelView.Password
+                Password = regModelView.Password
             };
         }
 
-        public virtual async Task<UserModelView> GetUser(string login)
+        public async Task<User> GetEntity(object id)
         {
-            var user = await _context.Users.Where(u => u.Login == login).SingleOrDefaultAsync();
+            return await _context.Users.FindAsync(id);
+        }
+
+
+        public virtual async Task<UserModelView> GetModelView(object id)
+        {
+            var user = await _context.Users.FindAsync(id);
             if (user == null) return null;
             var modelView = new UserModelView(user.Login);
 

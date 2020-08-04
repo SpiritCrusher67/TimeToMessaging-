@@ -9,10 +9,11 @@ using Microsoft.AspNetCore.Hosting;
 using TTMLibrary.ModelViews;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Server.Services
 {
-    public class UsersService
+    public class UsersService : IEntityService<User,UserModelView>, IEntityFilesHandler
     {
         ApplicationContext _context;
         IWebHostEnvironment _environment;
@@ -24,75 +25,80 @@ namespace Server.Services
 
         }
 
-        public async Task<UserModelView> GetUser(string login, IUserBuilder userBuilder)
-        {
-            userBuilder.ConfigureBuilder(_context, _environment);
-
-            return await userBuilder.GetUser(login);
-        }
-
         public async Task<User> GetUser(string login,string password) => 
             await _context.Users.Where(u => u.Login == login && u.Password == password).SingleOrDefaultAsync();
 
-        public async Task<bool> CreateUser(RegistrationModelView modelView, IUserBuilder userBuilder)
+
+        public async Task<UserModelView> Get(object Id, IEntityBuilder<User, UserModelView> builder)
         {
-            userBuilder.ConfigureBuilder(_context, _environment);
+            builder.ConfigureBuilder(_context, _environment);
 
-            var user = await userBuilder.CreateUser(modelView);
-
-            if (user != null)
-            {
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-
-                return true;
-            }
-            return false;
+            return await builder.GetModelView(Id);
         }
 
-        public async Task<User> AddFriend(string login, string friendLogin)
+        public async Task<UserModelView> Create(UserModelView modelView, IEntityBuilder<User, UserModelView> builder)
+        {
+            builder.ConfigureBuilder(_context);
+
+            var user = await builder.Create(modelView);
+            if (user == null)
+                return null;
+
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            return modelView;
+        }
+
+        public async Task<UserModelView> Update(UserModelView modelView)
+        {
+            var user = await _context.Users.FindAsync(modelView.Login);
+            if (user == null)
+                return null;
+
+            if (modelView is PasswordModelView)
+            {
+                var passMV = (PasswordModelView)modelView;
+
+                if (user.Password != passMV.OldPassword)
+                    return null;
+
+                user.Password = passMV.Password;
+            }
+            else if (modelView is EmailModelView)
+            {
+                var emailMV = (EmailModelView)modelView;
+
+                user.Email = emailMV.NewEmail;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return modelView;
+        }
+
+        public Task<bool> Delete(object id, string userLogin)
         {
             throw new NotImplementedException();
         }
 
-        public async Task UploadAvatar(IFormFile avatar, string login)
+        public Task<(Stream, string)> GetFile(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task SaveFile(IFormFile file, string innerDirectory = null, string newFileName = null)
         {
             var path = $"{_environment.WebRootPath}/Files/Avatars/";
-            var file = Directory.GetFiles(path , $"{login}.*").FirstOrDefault();
+            var avatarPath = Directory.GetFiles(path, $"{newFileName}.*").FirstOrDefault();
 
-            if (file != string.Empty)
-                File.Delete(file);
+            if (avatarPath != string.Empty)
+                File.Delete(avatarPath);
 
-            using (FileStream fs = new FileStream($"{path}{login}{Path.GetExtension(avatar.FileName)}", FileMode.Create))
+            using (FileStream fs = new FileStream($"{path}{newFileName}{Path.GetExtension(file.FileName)}", FileMode.Create))
             {
-                await avatar.CopyToAsync(fs);
+                await file.CopyToAsync(fs);
             }
-        }
-
-        public async Task<bool> ChangePassword(PasswordModelView modelView, string login)
-        {
-            var user = await _context.Users.FindAsync(login);
-
-            if (user == null || user.Password != modelView.OldPassword)
-                return false;
-
-            user.Password = modelView.Password;
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-
-        public async Task<bool> ChangeEmail(EmailModelView modelView, string login)
-        {
-            var user = await _context.Users.FindAsync(login);
-
-            if (user == null || user.Password != modelView.Password)
-                return false;
-
-            user.Email = modelView.NewEmail;
-            await _context.SaveChangesAsync();
-
-            return true;
         }
     }
 }

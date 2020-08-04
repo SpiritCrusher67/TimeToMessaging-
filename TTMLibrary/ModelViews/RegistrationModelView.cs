@@ -5,10 +5,13 @@ using System.Text;
 
 namespace TTMLibrary.ModelViews
 {
-    public class RegistrationModelView
+    public class RegistrationModelView : UserModelView
     {
-        [Required]
-        public string Login { get; set; }
+        public RegistrationModelView(string login) : base(login)
+        {
+
+        }
+
         [Required]
         [EmailAddress]
         public string Email { get; set; }

@@ -11,7 +11,7 @@ namespace Server.Services.Builders
 {
     public interface IEntityBuilder<T,M> where T : class where M : IEntityModelView
     {
-        public void ConfigureBuilder(ApplicationContext context);
+        public void ConfigureBuilder(ApplicationContext context, IWebHostEnvironment environment = null);
         public Task<T> GetEntity(object id);
         public Task<M> GetModelView(object id);
         public Task<T> Create(M modelView);
