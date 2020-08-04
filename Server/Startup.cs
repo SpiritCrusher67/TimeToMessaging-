@@ -75,6 +75,7 @@ namespace Server
             services.AddScoped<UsersService>();
             services.AddScoped<IEntityService<Message, MessageModelView>,MessageService>();
             services.AddScoped<IEntityService<Group, GroupModelView>,GroupService>();
+            services.AddScoped<IEntityService<Invite,InviteModelView>,InviteService>();
 
         }
 

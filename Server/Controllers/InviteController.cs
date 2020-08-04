@@ -2,51 +2,73 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json.Linq;
 using Server.Models;
+using Server.Services;
+using Server.Services.Builders;
+using TTMLibrary.ModelViews;
 
 namespace Server.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class InviteController : ControllerBase
     {
-        ApplicationContext db;
-        public InviteController(ApplicationContext context)
+        IEntityService<Invite, InviteModelView> _inviteService;
+        public InviteController(IEntityService<Invite, InviteModelView> service)
         {
-            db = context;
+            _inviteService = service;
         }
 
-        //создание инвайта
+        [HttpGet]
+        public async Task<ActionResult> Get(Guid id)
+        {
+            var invite = await _inviteService.Get(id, new InviteBuilder());
+
+            if (invite == null)
+                return NotFound();
+
+            return Ok(invite);
+        }
+
         [HttpPost]
-        public async Task<ActionResult<Invite>> Post(Invite invite)
+        public async Task<ActionResult> Create(InviteModelView modelView)
         {
-            db.Invites.Add(invite);
-            await db.SaveChangesAsync();
-            return Ok();
+            if (!ModelState.IsValid)
+                return ValidationProblem();
+
+            var invite = await _inviteService.Create(modelView, new InviteBuilder());
+
+            if (invite == null)
+                return BadRequest();
+
+            return Ok(invite);
         }
-        [HttpPut]
-        public async Task<ActionResult<Invite>> Put(Invite invite)
+
+        [HttpPost("/api/[controller]/Accept")]
+        public async Task<ActionResult> Accept(Guid id)
         {
-            db.Update(invite);
-            await db.SaveChangesAsync();
+            if (!await (_inviteService as InviteService)?.Accept(id, HttpContext.User.Identity.Name))
+                return BadRequest();
+
+            await _inviteService.Delete(id, HttpContext.User.Identity.Name);
+
             return Ok();
         }
 
-        [HttpGet("{login}")]
-        public async Task<ActionResult<IEnumerable<Guid>>> Get(string login)
+        [HttpPost("/api/[controller]/Reject")]
+        public async Task<ActionResult> Reject(Guid id)
         {
-            var user = await db.Users.Include("Invites").Where(u => u.Login == login).FirstOrDefaultAsync();
-            return user.Invites.Where(i=> i.Status == IviteStatus.Sended).Select(g => g.Id).ToList();
+            if (!await _inviteService.Delete(id, HttpContext.User.Identity.Name))
+                return BadRequest();
+
+            return Ok();
         }
-        [HttpGet("{login}/{id}")]
-        public async Task<ActionResult<Invite>> Get(string login, Guid id)
-        {
-            var invite = await db.Invites.Include("Group").Where(g => g.Id == id).FirstOrDefaultAsync();
-            return invite;
-        }
-    }
+}
 }

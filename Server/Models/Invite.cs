@@ -17,17 +17,6 @@ namespace Server.Models
 
         public Guid? GroupId { get; set; }
         public Group Group { get; set; }
-
-        public Invite()
-        {
-
-        }
-
-        public Invite(string userLogin, Guid groupId)
-        {
-            UserLogin = userLogin;
-            GroupId = groupId;
-        }
     }
 
     public enum IviteStatus
